@@ -41,3 +41,8 @@ Error resolving plugin [id: 'dev.flutter.flutter-plugin-loader', version: '1.0.0
    - https://firebase.google.com/docs/flutter/setup?platform=ios
 
 `dart pub global activate flutterfire_cli`
+
+# Netlify build command
+   - https://odeabreu.medium.com/thank-you-for-the-tutorial-c645c1f2b875
+
+`if cd flutter; then git pull && cd ..; else git clone https://github.com/flutter/flutter.git; fi && flutter/bin/flutter config --enable-web && flutter/bin/flutter build web --release`
