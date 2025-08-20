@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prototype_a/pages/academy_page.dart';
 import 'package:prototype_a/pages/analysis_page.dart';
+import 'package:prototype_a/pages/not_found_page.dart';
 import 'package:prototype_a/pages/tracker_page.dart';
 import 'package:prototype_a/pages/training_page.dart';
 import 'package:prototype_a/pages/user_page.dart';
@@ -62,6 +63,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
       return null; // no redirect
     },
+    errorBuilder: (context, state) => const NotFoundPage(),
   );
 });
 
