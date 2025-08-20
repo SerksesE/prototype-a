@@ -50,10 +50,20 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(name: 'login', path: '/login', builder: (_, _) => LoginPage()),
+      GoRoute(
+        name: 'not-found',
+        path: '/not-found',
+        builder: (_, _) => const NotFoundPage(),
+      ),
     ],
     redirect: (context, state) {
       final loggedIn = authNotifier.loggedIn;
       final loggingIn = state.uri.toString() == '/login';
+      final validPaths = AppTab.values.map((t) => t.path).toList();
+
+      if (!validPaths.contains(state.uri.toString())) {
+        return '/not-found';
+      }
 
       if (!loggedIn && !loggingIn) {
         return '/login';
