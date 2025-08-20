@@ -1,25 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:prototype_a/providers/index_provider.dart';
 import 'package:prototype_a/utils/app_tab.dart';
 import 'package:prototype_a/widgets/responsive_nav_bar.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerWidget {
   final Widget child;
   const AppShell({super.key, required this.child});
 
-  @override
-  Widget build(BuildContext context) {
+  void onTap(int index, WidgetRef ref, BuildContext context) {
     final router = GoRouter.of(context);
+    ref.read(currentIndexProvider.notifier).setIndex(index);
+    router.go(AppTab.values[index].path);
+  }
 
-    // List of your top-level routes
-    final tabs = AppTab.values.map((tab) => tab.path).toList(growable: false);
-
-    // Find active tab based on current route
-    int currentIndex = tabs.indexWhere(
-      (t) => router.state.uri.toString().startsWith(t),
-    );
-    if (currentIndex == -1) currentIndex = 0;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(currentIndexProvider);
 
     return Scaffold(
       appBar: kIsWeb
@@ -27,7 +26,7 @@ class AppShell extends StatelessWidget {
               preferredSize: const Size.fromHeight(70),
               child: ResponsiveNavBar(
                 currentIndex: currentIndex,
-                onTap: (index) => router.go(tabs[index]),
+                onTap: (index) => onTap(index, ref, context),
               ),
             )
           : null,
@@ -36,7 +35,7 @@ class AppShell extends StatelessWidget {
           ? null
           : ResponsiveNavBar(
               currentIndex: currentIndex,
-              onTap: (index) => router.go(tabs[index]),
+              onTap: (index) => onTap(index, ref, context),
             ),
     );
   }

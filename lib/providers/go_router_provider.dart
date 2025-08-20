@@ -7,6 +7,8 @@ import 'package:prototype_a/pages/analysis_page.dart';
 import 'package:prototype_a/pages/tracker_page.dart';
 import 'package:prototype_a/pages/training_page.dart';
 import 'package:prototype_a/pages/user_page.dart';
+import 'package:prototype_a/utils/app_tab.dart';
+import 'package:prototype_a/utils/custom_transition.dart';
 import 'package:prototype_a/widgets/appshell.dart';
 import '../pages/login_page.dart';
 
@@ -31,35 +33,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return AppShell(child: child); // your nav bar wrapper
+          return AppShell(child: child); // <-- stays at the top
         },
         routes: [
-          GoRoute(
-            name: 'tracker',
-            path: '/tracker',
-            builder: (_, _) => const TrackerPage(),
-          ),
-          GoRoute(
-            name: 'training',
-            path: '/training',
-            builder: (_, _) => const TrainingPage(),
-          ),
-          GoRoute(
-            name: 'analysis',
-            path: '/analysis',
-            builder: (_, _) => const AnalysisPage(),
-          ),
-          GoRoute(
-            name: 'academy',
-            path: '/academy',
-            builder: (_, _) => const AcademyPage(),
-          ),
-          GoRoute(
-            name: 'user',
-            path: '/user',
-            builder: (_, _) => const UserPage(),
-          ),
-          // GoRoute(name: 'login', path: '/login', builder: (_, _) => LoginPage()),
+          for (var i = 0; i < AppTab.values.length; i++)
+            GoRoute(
+              path: AppTab.values[i].path,
+              pageBuilder: (context, state) => buildPageWithTransition(
+                child: _pageFromTab(AppTab.values[i]),
+                state: state,
+                context: context,
+                targetIndex: i,
+              ),
+            ),
         ],
       ),
       GoRoute(name: 'login', path: '/login', builder: (_, _) => LoginPage()),
@@ -78,3 +64,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     },
   );
 });
+
+Widget _pageFromTab(AppTab tab) {
+  switch (tab) {
+    case AppTab.tracker:
+      return const TrackerPage();
+    case AppTab.training:
+      return const TrainingPage();
+    case AppTab.analysis:
+      return const AnalysisPage();
+    case AppTab.academy:
+      return const AcademyPage();
+    case AppTab.user:
+      return const UserPage();
+  }
+}

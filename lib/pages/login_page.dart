@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prototype_a/providers/auth_provider.dart';
+import 'package:prototype_a/providers/index_provider.dart';
 
 class LoginPage extends ConsumerWidget {
   LoginPage({super.key});
@@ -17,6 +18,7 @@ class LoginPage extends ConsumerWidget {
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
           );
+      ref.read(currentIndexProvider.notifier).setIndex(0);
     }
   }
 

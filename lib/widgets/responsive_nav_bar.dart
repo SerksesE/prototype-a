@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:prototype_a/providers/index_provider.dart';
 import 'package:prototype_a/utils/app_tab.dart';
 
-class ResponsiveNavBar extends StatelessWidget {
+class ResponsiveNavBar extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
@@ -13,7 +15,9 @@ class ResponsiveNavBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentIndex = ref.watch(currentIndexProvider);
+
     if (!kIsWeb) {
       return BottomNavigationBar(
         currentIndex: currentIndex,
