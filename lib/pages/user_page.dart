@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prototype_a/providers/auth_provider.dart';
 import 'package:prototype_a/providers/user_provider.dart';
 
-class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
+class UserPage extends ConsumerWidget {
+  const UserPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

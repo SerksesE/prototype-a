@@ -37,11 +37,14 @@ class LoginPage extends ConsumerWidget {
                 TextFormField(
                   decoration: const InputDecoration(labelText: "Email"),
                   controller: _emailController,
+                  textInputAction: TextInputAction.next,
                 ),
                 TextFormField(
                   decoration: const InputDecoration(labelText: "Password"),
                   obscureText: true,
                   controller: _passwordController,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (value) => _login(ref),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
