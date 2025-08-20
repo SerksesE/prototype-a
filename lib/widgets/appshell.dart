@@ -18,7 +18,16 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final router = GoRouter.of(context);
     final currentIndex = ref.watch(currentIndexProvider);
+
+    // Sync provider with actual location (safe, does not loop)
+    ref.listenManual(currentIndexProvider, (_, _) {}); // keep alive
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(currentIndexProvider.notifier)
+          .syncWithLocation(router.state.uri.toString());
+    });
 
     return Scaffold(
       appBar: kIsWeb
