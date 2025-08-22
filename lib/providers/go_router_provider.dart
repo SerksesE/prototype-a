@@ -59,7 +59,9 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final loggedIn = authNotifier.loggedIn;
       final loggingIn = state.uri.toString() == '/login';
-      final validPaths = AppTab.values.map((t) => t.path).toList();
+      final validPaths = AppTab.values.map((t) => t.path).toList().followedBy([
+        '/login',
+      ]);
 
       if (!validPaths.contains(state.uri.toString())) {
         return '/not-found';
