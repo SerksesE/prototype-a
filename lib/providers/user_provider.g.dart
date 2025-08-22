@@ -30,7 +30,7 @@ final class UserControllerProvider
   UserController create() => UserController();
 }
 
-String _$userControllerHash() => r'7b1f0586ba5c6308eeb56979d588c46ebc6b701d';
+String _$userControllerHash() => r'd61203dfa400d7540699a16bc0abf6b6b631e8e2';
 
 abstract class _$UserController extends $AsyncNotifier<UserModel?> {
   FutureOr<UserModel?> build();

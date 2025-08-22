@@ -15,37 +15,49 @@ class UserController extends _$UserController {
   }
 
   Future<UserModel?> _fetchCurrentUser() async {
-    final authUser = ref.watch(authControllerProvider);
-    if (authUser == null) {
-      state = const AsyncData(null);
-      return null;
-    }
+    final authState = ref.watch(authControllerProvider);
 
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(authUser.uid)
-        .get();
+    return await authState.when(
+      data: (firebaseUser) async {
+        if (firebaseUser == null) {
+          state = const AsyncData(null);
+          return null;
+        }
 
-    if (!doc.exists) {
-      // first login → create Firestore doc
-      // possible change this to signup by admin
-      final newUser = UserModel(
-        id: authUser.uid,
-        email: authUser.email ?? '',
-        firstName: '',
-        lastName: '',
-      );
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(authUser.uid)
-          .set(newUser.toJson());
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .get();
 
-      return newUser;
-    }
+        if (!doc.exists) {
+          final newUser = UserModel(
+            id: firebaseUser.uid,
+            email: firebaseUser.email ?? '',
+            firstName: '',
+            lastName: '',
+          );
 
-    final user = UserModel.fromJson({...doc.data()!, 'id': doc.id});
-    state = AsyncData(user);
-    return user;
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(firebaseUser.uid)
+              .set(newUser.toJson());
+
+          return newUser;
+        }
+
+        final user = UserModel.fromJson({...doc.data()!, 'id': doc.id});
+        state = AsyncData(user);
+        return user;
+      },
+      loading: () async {
+        state = const AsyncLoading();
+        return null;
+      },
+      error: (err, stack) async {
+        state = AsyncError(err, stack);
+        return null;
+      },
+    );
   }
 
   Future<void> refresh() async {

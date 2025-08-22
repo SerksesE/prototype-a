@@ -8,19 +8,24 @@ part 'auth_provider.g.dart';
 @riverpod
 class AuthController extends _$AuthController {
   @override
-  User? build() {
-    return FirebaseAuth.instance.currentUser;
+  AsyncValue<User?> build() {
+    return AsyncData(FirebaseAuth.instance.currentUser);
   }
 
   Future<void> signIn({required String email, required String password}) async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    state = const AsyncLoading();
+    try {
+      final credentials = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+
+      state = AsyncData(credentials.user);
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+    }
   }
 
   Future<void> register(String email, String password) async {
-    state = const AsyncLoading() as User?;
+    state = const AsyncLoading();
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -38,13 +43,14 @@ class AuthController extends _$AuthController {
           .doc(credential.user!.uid)
           .set(newUser.toJson());
 
-      state = AsyncData(credential.user as AsyncValue<User?>) as User?;
+      state = AsyncData(credential.user);
     } on FirebaseAuthException catch (e, st) {
-      state = AsyncError(e, st) as User?;
+      state = AsyncError(e, st);
     }
   }
 
   Future<void> signOut() async {
     await FirebaseAuth.instance.signOut();
+    state = const AsyncData(null);
   }
 }

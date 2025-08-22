@@ -22,6 +22,7 @@ samples, guidance on mobile development, and a full API reference.
 
 # Code generation:
 dart run build_runner watch -d
+dart run build_runner watch -d --delete-conflicting-outputs 
 
 # Custom lint:
 dart run custom_lint
@@ -46,3 +47,33 @@ Error resolving plugin [id: 'dev.flutter.flutter-plugin-loader', version: '1.0.0
    - https://odeabreu.medium.com/thank-you-for-the-tutorial-c645c1f2b875
 
 `if cd flutter; then git pull && cd ..; else git clone https://github.com/flutter/flutter.git; fi && flutter/bin/flutter config --enable-web && flutter/bin/flutter build web --release`
+
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // a user may only access and update his/her own data
+    match /users/{userId}/{documents=**} {
+      allow read, write, update: if request.auth != null && request.auth.uid == userId; 
+    }
+    
+    // everyone may accass the modules
+    match /modules/{document=**} {
+    	allow read: if request.auth != null
+    }
+    
+    // an admin may access, update, and delete users
+    match /users/{documents=**} {
+    	allow read, write, update, delete:
+      if request.auth.uid in get(/databases/$(database)/documents/admins/authorized).data.ids
+    }
+    
+    // an admin may access, add and delete other admins
+    match /admins/{documents=**} {
+    	allow read, write, update, delete:
+      if request.auth.uid in get(/databases/$(database)/documents/admins/authorized).data.ids
+    }
+  }
+}

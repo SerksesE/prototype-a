@@ -10,7 +10,7 @@ part of 'auth_provider.dart';
 const authControllerProvider = AuthControllerProvider._();
 
 final class AuthControllerProvider
-    extends $NotifierProvider<AuthController, User?> {
+    extends $NotifierProvider<AuthController, AsyncValue<User?>> {
   const AuthControllerProvider._()
     : super(
         from: null,
@@ -30,28 +30,28 @@ final class AuthControllerProvider
   AuthController create() => AuthController();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(User? value) {
+  Override overrideWithValue(AsyncValue<User?> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<User?>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<User?>>(value),
     );
   }
 }
 
-String _$authControllerHash() => r'b8fea161073c77167ffb55daba209a52476831bd';
+String _$authControllerHash() => r'f8aac0a1c40db3d24a9d984d2aef49bd5835f415';
 
-abstract class _$AuthController extends $Notifier<User?> {
-  User? build();
+abstract class _$AuthController extends $Notifier<AsyncValue<User?>> {
+  AsyncValue<User?> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<User?, User?>;
+    final ref = this.ref as $Ref<AsyncValue<User?>, AsyncValue<User?>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<User?, User?>,
-              User?,
+              AnyNotifier<AsyncValue<User?>, AsyncValue<User?>>,
+              AsyncValue<User?>,
               Object?,
               Object?
             >;
