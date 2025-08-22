@@ -5,7 +5,7 @@ import '../models/user_model.dart';
 
 part 'user_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class UserController extends _$UserController {
   UserModel? get user => state.whenOrNull(data: (user) => user);
 

@@ -2,7 +2,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../pages/home_page.dart';
+import 'package:prototype_a/pages/academy_page.dart';
+import 'package:prototype_a/pages/analysis_page.dart';
+import 'package:prototype_a/pages/not_found_page.dart';
+import 'package:prototype_a/pages/tracker_page.dart';
+import 'package:prototype_a/pages/training_page.dart';
+import 'package:prototype_a/pages/user_page.dart';
+import 'package:prototype_a/utils/app_tab.dart';
+import 'package:prototype_a/utils/custom_transition.dart';
+import 'package:prototype_a/widgets/appshell.dart';
 import '../pages/login_page.dart';
 
 class GoRouterAuthNotifier extends ChangeNotifier {
@@ -22,22 +30,66 @@ final goRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     refreshListenable: authNotifier,
-    initialLocation: '/',
+    initialLocation: '/tracker',
     routes: [
-      GoRoute(name: 'home', path: '/', builder: (_, _) => const HomePage()),
+      ShellRoute(
+        builder: (context, state, child) {
+          return AppShell(child: child); // <-- stays at the top
+        },
+        routes: [
+          for (var i = 0; i < AppTab.values.length; i++)
+            GoRoute(
+              path: AppTab.values[i].path,
+              pageBuilder: (context, state) => buildPageWithTransition(
+                child: _pageFromTab(AppTab.values[i]),
+                state: state,
+                context: context,
+                targetIndex: i,
+              ),
+            ),
+        ],
+      ),
       GoRoute(name: 'login', path: '/login', builder: (_, _) => LoginPage()),
+      GoRoute(
+        name: 'not-found',
+        path: '/not-found',
+        builder: (_, _) => const NotFoundPage(),
+      ),
     ],
     redirect: (context, state) {
       final loggedIn = authNotifier.loggedIn;
       final loggingIn = state.uri.toString() == '/login';
+      final validPaths = AppTab.values.map((t) => t.path).toList().followedBy([
+        '/login',
+      ]);
+
+      if (!validPaths.contains(state.uri.toString())) {
+        return '/not-found';
+      }
 
       if (!loggedIn && !loggingIn) {
         return '/login';
       } else if (loggedIn && loggingIn) {
-        return '/';
+        return '/tracker';
       }
 
       return null; // no redirect
     },
+    errorBuilder: (context, state) => const NotFoundPage(),
   );
 });
+
+Widget _pageFromTab(AppTab tab) {
+  switch (tab) {
+    case AppTab.tracker:
+      return const TrackerPage();
+    case AppTab.training:
+      return const TrainingPage();
+    case AppTab.analysis:
+      return const AnalysisPage();
+    case AppTab.academy:
+      return const AcademyPage();
+    case AppTab.user:
+      return const UserPage();
+  }
+}
