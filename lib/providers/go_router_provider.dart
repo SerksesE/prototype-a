@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:prototype_a/pages/academy_page.dart';
 import 'package:prototype_a/pages/analysis_page.dart';
 import 'package:prototype_a/pages/not_found_page.dart';
+import 'package:prototype_a/pages/nutrition_page.dart';
 import 'package:prototype_a/pages/tracker_page.dart';
 import 'package:prototype_a/pages/training_page.dart';
 import 'package:prototype_a/pages/user_page.dart';
@@ -34,7 +35,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       ShellRoute(
         builder: (context, state, child) {
-          return AppShell(child: child); // <-- stays at the top
+          return AppShell(child: child);
         },
         routes: [
           for (var i = 0; i < AppTab.values.length; i++)
@@ -73,7 +74,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return '/tracker';
       }
 
-      return null; // no redirect
+      return null;
     },
     errorBuilder: (context, state) => const NotFoundPage(),
   );
@@ -85,6 +86,8 @@ Widget _pageFromTab(AppTab tab) {
       return const TrackerPage();
     case AppTab.training:
       return const TrainingPage();
+    case AppTab.nutrition:
+      return const NutritionPage();
     case AppTab.analysis:
       return const AnalysisPage();
     case AppTab.academy:
