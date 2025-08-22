@@ -1,69 +1,126 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:prototype_a/providers/index_provider.dart';
 import 'package:prototype_a/utils/app_tab.dart';
 
-class ResponsiveNavBar extends ConsumerWidget {
-  final int currentIndex;
-  final ValueChanged<int> onTap;
+// Data class for navigation items
+class NavigationData {
+  final IconData icon;
+  final String label;
+  bool isActive;
+  bool isHovering;
 
+  NavigationData({
+    required this.icon,
+    required this.label,
+    this.isActive = false,
+    this.isHovering = false,
+  });
+}
+
+class ResponsiveNavBar extends ConsumerStatefulWidget {
   const ResponsiveNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
   });
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentIndex = ref.watch(currentIndexProvider);
+  final int currentIndex;
+  final ValueChanged<int> onTap;
 
+  @override
+  ConsumerState<ResponsiveNavBar> createState() => _ResponsiveNavBarState();
+}
+
+class _ResponsiveNavBarState extends ConsumerState<ResponsiveNavBar> {
+  List<NavigationData> navigationData = [];
+
+  @override
+  void initState() {
+    final iconData = [
+      Icons.track_changes,
+      Icons.fitness_center,
+      Icons.restaurant,
+      Icons.bar_chart,
+      Icons.school,
+      Icons.person,
+    ];
+
+    navigationData = AppTab.values.map((tab) {
+      return NavigationData(
+        icon: iconData[tab.index],
+        label: tab.label,
+        isActive: widget.currentIndex == tab.index,
+        isHovering: false,
+      );
+    }).toList();
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     if (!kIsWeb) {
       return BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: onTap,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.track_changes),
-            label: 'Tracker',
+        currentIndex: widget.currentIndex,
+        onTap: widget.onTap,
+        items: List<BottomNavigationBarItem>.from(
+          navigationData.map(
+            (data) => BottomNavigationBarItem(
+              icon: Icon(data.icon),
+              label: data.label,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
-            label: 'Training',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: 'Analysis',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Academy'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'User'),
-        ],
+        ),
       );
     } else {
-      final labels = AppTab.values
-          .map((tab) => tab.label)
-          .toList(growable: false);
-
       return Container(
-        color: Theme.of(context).appBarTheme.backgroundColor ?? Colors.white,
+        color: Theme.of(context).appBarTheme.backgroundColor ?? Colors.black,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(labels.length, (index) {
-            final isActive = currentIndex == index;
+          children: List.generate(navigationData.length, (index) {
+            final isActive = widget.currentIndex == index;
             return TextButton(
-              onPressed: () => onTap(index),
-              child: Text(
-                labels[index],
-                style: TextStyle(
-                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                  color: isActive
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.black,
-                ),
+              onHover: (value) =>
+                  setState(() => navigationData[index].isHovering = value),
+              onPressed: () => widget.onTap(index),
+              child: Row(
+                children: [
+                  Text(
+                    navigationData[index].label,
+                    style: TextStyle(
+                      fontSize: isActive ? 20 : 16,
+                      fontWeight: isActive
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: isActive || navigationData[index].isHovering
+                          ? Colors.white
+                          : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    navigationData[index].icon,
+                    size: isActive ? 24 : 20,
+                    color: isActive || navigationData[index].isHovering
+                        ? Colors.white
+                        : Colors.grey,
+                  ),
+                  if (isActive)
+                    Container(
+                      margin: const EdgeInsets.only(left: 8),
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                ],
               ),
             );
-          }),
+          }).toList(),
         ),
       );
     }
