@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_provider.dart';
+part of 'auth_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -38,7 +38,7 @@ final class AuthControllerProvider
   }
 }
 
-String _$authControllerHash() => r'f8aac0a1c40db3d24a9d984d2aef49bd5835f415';
+String _$authControllerHash() => r'777bac33f7c386b32d878762d722809922aee69a';
 
 abstract class _$AuthController extends $Notifier<AsyncValue<User?>> {
   AsyncValue<User?> build();

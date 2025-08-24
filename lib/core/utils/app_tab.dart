@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 enum AppTab { tracker, training, nutrition, analysis, academy, user }
 
 extension AppTabData on AppTab {
@@ -15,6 +17,23 @@ extension AppTabData on AppTab {
         return 'Academy';
       case AppTab.user:
         return 'User';
+    }
+  }
+
+  IconData get iconData {
+    switch (this) {
+      case AppTab.tracker:
+        return Icons.track_changes;
+      case AppTab.training:
+        return Icons.fitness_center;
+      case AppTab.nutrition:
+        return Icons.restaurant;
+      case AppTab.analysis:
+        return Icons.bar_chart;
+      case AppTab.academy:
+        return Icons.school;
+      case AppTab.user:
+        return Icons.person;
     }
   }
 

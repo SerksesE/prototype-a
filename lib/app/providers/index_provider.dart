@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:prototype_a/utils/app_tab.dart';
+import 'package:prototype_a/core/utils/app_tab.dart';
 
 class CurrentIndexNotifier extends Notifier<int> {
   int _previousIndex = 0;

@@ -1,49 +1,49 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_provider.dart';
+part of 'admin_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-@ProviderFor(UserController)
-const userControllerProvider = UserControllerProvider._();
+@ProviderFor(AdminController)
+const adminControllerProvider = AdminControllerProvider._();
 
-final class UserControllerProvider
-    extends $AsyncNotifierProvider<UserController, UserModel?> {
-  const UserControllerProvider._()
+final class AdminControllerProvider
+    extends $AsyncNotifierProvider<AdminController, List<UserModel>> {
+  const AdminControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'userControllerProvider',
+        name: r'adminControllerProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$userControllerHash();
+  String debugGetCreateSourceHash() => _$adminControllerHash();
 
   @$internal
   @override
-  UserController create() => UserController();
+  AdminController create() => AdminController();
 }
 
-String _$userControllerHash() => r'132e9fd051e91b51e7f3bb0b89e0f868c22f87f4';
+String _$adminControllerHash() => r'a4d5209a1ad8ca201f85f6f0c5c67af46e88a2ea';
 
-abstract class _$UserController extends $AsyncNotifier<UserModel?> {
-  FutureOr<UserModel?> build();
+abstract class _$AdminController extends $AsyncNotifier<List<UserModel>> {
+  FutureOr<List<UserModel>> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<AsyncValue<UserModel?>, UserModel?>;
+    final ref = this.ref as $Ref<AsyncValue<List<UserModel>>, List<UserModel>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<UserModel?>, UserModel?>,
-              AsyncValue<UserModel?>,
+              AnyNotifier<AsyncValue<List<UserModel>>, List<UserModel>>,
+              AsyncValue<List<UserModel>>,
               Object?,
               Object?
             >;

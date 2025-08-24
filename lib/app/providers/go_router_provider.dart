@@ -2,17 +2,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:prototype_a/features/user/view/user_page.dart';
 import 'package:prototype_a/pages/academy_page.dart';
 import 'package:prototype_a/pages/analysis_page.dart';
-import 'package:prototype_a/pages/not_found_page.dart';
+import 'package:prototype_a/app/view/not_found_page.dart';
 import 'package:prototype_a/pages/nutrition_page.dart';
 import 'package:prototype_a/pages/tracker_page.dart';
 import 'package:prototype_a/pages/training_page.dart';
-import 'package:prototype_a/pages/user_page.dart';
-import 'package:prototype_a/utils/app_tab.dart';
-import 'package:prototype_a/utils/custom_transition.dart';
-import 'package:prototype_a/widgets/appshell.dart';
-import '../pages/login_page.dart';
+import 'package:prototype_a/core/utils/app_tab.dart';
+import 'package:prototype_a/core/utils/custom_transition.dart';
+import 'package:prototype_a/app/view/appshell.dart';
+import '../../features/user/view/login_page.dart';
 
 class GoRouterAuthNotifier extends ChangeNotifier {
   GoRouterAuthNotifier() {

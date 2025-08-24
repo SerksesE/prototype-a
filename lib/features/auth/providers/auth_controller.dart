@@ -1,9 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:prototype_a/models/user_model.dart';
+import 'package:prototype_a/app/providers/index_provider.dart';
+import 'package:prototype_a/core/utils/app_tab.dart';
+import 'package:prototype_a/features/admin/providers/admin_controller.dart';
+import 'package:prototype_a/features/user/data/user_model.dart';
+import 'package:prototype_a/features/user/providers/user_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'auth_provider.g.dart';
+part 'auth_controller.g.dart';
 
 @riverpod
 class AuthController extends _$AuthController {
@@ -14,18 +18,30 @@ class AuthController extends _$AuthController {
 
   Future<void> signIn({required String email, required String password}) async {
     state = const AsyncLoading();
+
     try {
       final credentials = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
       state = AsyncData(credentials.user);
-    } catch (e) {
-      state = AsyncError(e, StackTrace.current);
+
+      // Refresh userController
+      ref.read(userControllerProvider.notifier).build();
+
+      // Set the right page
+      ref
+          .read(currentIndexProvider.notifier)
+          .syncWithLocation(AppTab.tracker.path);
+    } on FirebaseAuthException catch (e) {
+      state = AsyncError(_firebaseErrorMessage(e), StackTrace.current);
+    } catch (_) {
+      state = AsyncError('Unexpected error', StackTrace.current);
     }
   }
 
   Future<void> register(String email, String password) async {
     state = const AsyncLoading();
+
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
@@ -49,8 +65,28 @@ class AuthController extends _$AuthController {
     }
   }
 
-  Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
+  Future<void> signOutAndClear() async {
+    // Reset user and admin providers
+    ref.invalidate(userControllerProvider);
+    ref.invalidate(adminControllerProvider);
+
     state = const AsyncData(null);
+
+    await FirebaseAuth.instance.signOut();
+  }
+
+  Future<void> clearError() async {
+    state = const AsyncData(null);
+  }
+
+  String _firebaseErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+        return 'No account found for that email.';
+      case 'wrong-password':
+        return 'Incorrect password.';
+      default:
+        return 'Login failed. Please try again.';
+    }
   }
 }

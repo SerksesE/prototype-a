@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:prototype_a/providers/index_provider.dart';
+import 'package:prototype_a/app/providers/index_provider.dart';
 
 CustomTransitionPage<dynamic> buildPageWithTransition({
   required Widget child,
