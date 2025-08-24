@@ -53,27 +53,29 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // a user may only access and update his/her own data
-    match /users/{userId}/{documents=**} {
-      allow read, write, update: if request.auth != null && request.auth.uid == userId; 
+
+    // Helper: check if current user has a doc in /admins
+    function isAdmin() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    
-    // everyone may accass the modules
-    match /modules/{document=**} {
-    	allow read: if request.auth != null
+
+    // Users collection
+    match /users/{userId} {
+      allow read, write, update, delete: if
+        // The user owns the document
+        request.auth != null && request.auth.uid == userId
+        // OR the user is an admin
+        || isAdmin();
     }
-    
-    // an admin may access, update, and delete users
-    match /users/{documents=**} {
-    	allow read, write, update, delete:
-      if request.auth.uid in get(/databases/$(database)/documents/admins/authorized).data.ids
-    }
-    
-    // an admin may access, add and delete other admins
-    match /admins/{documents=**} {
-    	allow read, write, update, delete:
-      if request.auth.uid in get(/databases/$(database)/documents/admins/authorized).data.ids
+
+    // Admins collection
+    match /admins/{adminId} {
+      // A user can read their own admin doc to check if it's there
+      allow read: if request.auth != null && request.auth.uid == adminId;
+
+      // Admins can create/update/delete any admin doc
+      allow create, update, delete: if isAdmin();
     }
   }
 }

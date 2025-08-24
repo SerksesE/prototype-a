@@ -10,6 +10,11 @@ sealed class UserModel with _$UserModel {
     required String? email,
     required String? firstName,
     required String? lastName,
+
+    // Currently ignored
+    @JsonKey(includeToJson: false, includeFromJson: false)
+    @Default(false)
+    bool? isAdmin,
   }) = _UserModel;
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>

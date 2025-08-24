@@ -11,7 +11,11 @@ class UserPage extends ConsumerWidget {
     final user = ref.watch(userControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Welcome ${user.value?.email}")),
+      appBar: AppBar(
+        title: Text(
+          "Welcome ${user.value?.email} admin = ${user.value?.isAdmin}",
+        ),
+      ),
       body: Center(
         child: TextButton(
           onPressed: () => ref.watch(authControllerProvider.notifier).signOut(),

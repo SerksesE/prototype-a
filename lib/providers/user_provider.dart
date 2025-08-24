@@ -29,6 +29,7 @@ class UserController extends _$UserController {
             .doc(firebaseUser.uid)
             .get();
 
+        // Temporary user creation
         if (!doc.exists) {
           final newUser = UserModel(
             id: firebaseUser.uid,
@@ -45,7 +46,16 @@ class UserController extends _$UserController {
           return newUser;
         }
 
-        final user = UserModel.fromJson({...doc.data()!, 'id': doc.id});
+        final admin = await FirebaseFirestore.instance
+            .collection('admins')
+            .doc(firebaseUser.uid)
+            .get()
+            .then((d) => d.exists);
+
+        // Stops here because of permission
+
+        final user = UserModel.fromJson(doc.data()!).copyWith(isAdmin: admin);
+
         state = AsyncData(user);
         return user;
       },
@@ -73,6 +83,7 @@ class UserController extends _$UserController {
     if (current == null) return;
 
     final updated = current.copyWith(firstName: first, lastName: last);
+
     state = AsyncData(updated);
 
     await FirebaseFirestore.instance

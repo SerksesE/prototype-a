@@ -107,16 +107,6 @@ class _ResponsiveNavBarState extends ConsumerState<ResponsiveNavBar> {
                         ? Colors.white
                         : Colors.grey,
                   ),
-                  if (isActive)
-                    Container(
-                      margin: const EdgeInsets.only(left: 8),
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
                 ],
               ),
             );
