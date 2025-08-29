@@ -11,18 +11,36 @@ class AdminController extends _$AdminController {
 
   @override
   Future<List<UserModel>> build() async {
-    // fetch only once
-    if (_cachedUsers != null) return _cachedUsers!;
+    try {
+      // Riverpod already sets loading before this runs
+      if (_cachedUsers != null) return _cachedUsers!;
 
-    final currentUser = await _getCurrentUser();
-    if (currentUser == null || !(currentUser.isAdmin ?? false)) return [];
+      final currentUser = await _getCurrentUser();
+      if (currentUser == null || !(currentUser.isAdmin ?? false)) {
+        return [];
+      }
 
-    final query = await FirebaseFirestore.instance.collection('users').get();
-    _cachedUsers = query.docs
-        .map((doc) => UserModel.fromJson(doc.data()))
-        .toList();
+      final usersSnap = await FirebaseFirestore.instance
+          .collection("users")
+          .get();
+      final adminsSnap = await FirebaseFirestore.instance
+          .collection("admins")
+          .get();
 
-    return _cachedUsers!;
+      final adminIds = adminsSnap.docs.map((doc) => doc.id).toSet();
+
+      _cachedUsers = usersSnap.docs.map((doc) {
+        return UserModel.fromJson(
+          doc.data(),
+        ).copyWith(isAdmin: adminIds.contains(doc.id));
+      }).toList();
+
+      return _cachedUsers!;
+    } catch (e, st) {
+      // This ensures your view can react to error state
+      state = AsyncValue.error(e, st);
+      rethrow;
+    }
   }
 
   Future<UserModel?> _getCurrentUser() async {
@@ -34,11 +52,16 @@ class AdminController extends _$AdminController {
   Future<void> refreshUsers() async {
     _cachedUsers = null;
     state = const AsyncValue.loading();
-    state = AsyncValue.data(await build());
+    state = await AsyncValue.guard(() => build());
   }
 
   Future<void> updateUserRole(String userId, String role) async {
     await FirebaseFirestore.instance.collection('admins').doc(userId).set({});
     await refreshUsers(); // refresh only on explicit update
+  }
+
+  Future<void> deleteUser(String userId) async {
+    await FirebaseFirestore.instance.collection('users').doc(userId).delete();
+    await refreshUsers(); // refresh only on explicit delete
   }
 }

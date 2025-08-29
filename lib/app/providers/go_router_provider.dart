@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:prototype_a/app/providers/index_provider.dart';
 import 'package:prototype_a/features/user/view/user_page.dart';
 import 'package:prototype_a/pages/academy_page.dart';
 import 'package:prototype_a/pages/analysis_page.dart';
@@ -14,51 +15,70 @@ import 'package:prototype_a/core/utils/custom_transition.dart';
 import 'package:prototype_a/app/view/appshell.dart';
 import '../../features/user/view/login_page.dart';
 
-class GoRouterAuthNotifier extends ChangeNotifier {
-  GoRouterAuthNotifier() {
+class GoRouterAppNotifier extends ChangeNotifier {
+  GoRouterAppNotifier(this.ref) {
+    // listen to auth changes
     FirebaseAuth.instance.authStateChanges().listen((_) => notifyListeners());
+
+    // listen to index changes
+    ref.listen<int>(currentIndexProvider, (_, _) {
+      notifyListeners();
+    });
   }
 
+  void _setIndex(int index) {
+    ref.read(currentIndexProvider.notifier).setIndex(index);
+  }
+
+  final Ref ref;
+
   bool get loggedIn => FirebaseAuth.instance.currentUser != null;
+  int get index => ref.read(currentIndexProvider);
+  Function get setIndex => _setIndex;
 }
 
-final goRouterAuthNotifierProvider = Provider<GoRouterAuthNotifier>((ref) {
-  return GoRouterAuthNotifier();
+final goRouterAppNotifierProvider = Provider<GoRouterAppNotifier>((ref) {
+  return GoRouterAppNotifier(ref);
 });
 
 final goRouterProvider = Provider<GoRouter>((ref) {
-  final authNotifier = ref.watch(goRouterAuthNotifierProvider);
+  final appNotifier = ref.watch(goRouterAppNotifierProvider);
 
   return GoRouter(
-    refreshListenable: authNotifier,
+    refreshListenable: appNotifier,
     initialLocation: '/tracker',
     routes: [
       ShellRoute(
         builder: (context, state, child) {
           return AppShell(child: child);
         },
-        routes: [
-          for (var i = 0; i < AppTab.values.length; i++)
-            GoRoute(
-              path: AppTab.values[i].path,
-              pageBuilder: (context, state) => buildPageWithTransition(
-                child: _pageFromTab(AppTab.values[i]),
-                state: state,
-                context: context,
-                targetIndex: i,
+        routes:
+            List.generate(AppTab.values.length, (i) {
+              return GoRoute(
+                path: AppTab.values[i].path,
+                pageBuilder: (context, state) => buildPageWithTransition(
+                  child: _pageFromTab(AppTab.values[i]),
+                  state: state,
+                  context: context,
+                  targetIndex: i,
+                ),
+              );
+            }).toList()..addAll([
+              GoRoute(
+                name: 'login',
+                path: '/login',
+                builder: (_, _) => LoginPage(),
               ),
-            ),
-        ],
-      ),
-      GoRoute(name: 'login', path: '/login', builder: (_, _) => LoginPage()),
-      GoRoute(
-        name: 'not-found',
-        path: '/not-found',
-        builder: (_, _) => const NotFoundPage(),
+              GoRoute(
+                name: 'not-found',
+                path: '/not-found',
+                builder: (_, _) => const NotFoundPage(),
+              ),
+            ]),
       ),
     ],
     redirect: (context, state) {
-      final loggedIn = authNotifier.loggedIn;
+      final loggedIn = appNotifier.loggedIn;
       final loggingIn = state.uri.toString() == '/login';
       final validPaths = AppTab.values.map((t) => t.path).toList().followedBy([
         '/login',
@@ -72,6 +92,16 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         return '/login';
       } else if (loggedIn && loggingIn) {
         return '/tracker';
+      }
+
+      final tabIndex = AppTab.values.indexWhere(
+        (t) => t.path == state.uri.toString(),
+      );
+
+      if (tabIndex != -1 && tabIndex != appNotifier.index) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          appNotifier.setIndex(tabIndex);
+        });
       }
 
       return null;

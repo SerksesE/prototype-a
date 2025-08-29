@@ -59,6 +59,8 @@ class UserController extends _$UserController {
 
   // Update current user fields
   Future<void> updateCurrentUser(UserModel updatedUser) async {
+    state = state.copyWith(isLoading: true);
+
     state = state.copyWith(
       currentUser: state.currentUser.whenData(
         (user) => user?.copyWith(
@@ -75,6 +77,10 @@ class UserController extends _$UserController {
           .doc(updatedUser.id)
           .update(updatedUser.toJson());
     }
+
+    await Future.delayed(const Duration(milliseconds: 500), () {
+      state = state.copyWith(isLoading: false);
+    });
   }
 
   // Select a user for admin view

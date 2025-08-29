@@ -79,3 +79,6 @@ service cloud.firestore {
     }
   }
 }
+
+#TODO:
+- setup Google payment (pay-as-you-go) for cloudfunction

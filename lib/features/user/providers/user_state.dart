@@ -9,8 +9,12 @@ sealed class UserState with _$UserState {
   const factory UserState({
     required AsyncValue<UserModel?> currentUser,
     required UserModel? selectedUser,
+    required bool isLoading,
   }) = _UserState;
 
-  factory UserState.initial() =>
-      const UserState(currentUser: AsyncValue.loading(), selectedUser: null);
+  factory UserState.initial() => const UserState(
+    currentUser: AsyncValue.loading(),
+    selectedUser: null,
+    isLoading: false,
+  );
 }

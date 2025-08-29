@@ -8,7 +8,6 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
       body: Center(
         child: Container(
           width: 300,

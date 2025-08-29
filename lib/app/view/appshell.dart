@@ -12,7 +12,6 @@ class AppShell extends ConsumerWidget {
 
   void onTap(int index, WidgetRef ref, BuildContext context) {
     final router = GoRouter.of(context);
-    ref.read(currentIndexProvider.notifier).setIndex(index);
     router.go(AppTab.values[index].path);
   }
 

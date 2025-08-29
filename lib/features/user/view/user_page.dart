@@ -16,14 +16,18 @@ class UserPage extends ConsumerWidget {
     return userAsync.when(
       data: (user) => Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: kIsWeb ? 600 : double.infinity),
+          constraints: BoxConstraints(
+            minWidth: kIsWeb ? 600 : double.infinity,
+            maxWidth: kIsWeb ? 600 : double.infinity,
+          ),
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 const ProfileSection(),
                 const SizedBox(height: 24),
-                if (user?.isAdmin ?? false) const AdminSection(),
+                if (user?.isAdmin ?? false)
+                  SizedBox(width: double.infinity, child: const AdminSection()),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {

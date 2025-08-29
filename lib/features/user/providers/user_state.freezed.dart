@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserState {
 
- AsyncValue<UserModel?> get currentUser; UserModel? get selectedUser;
+ AsyncValue<UserModel?> get currentUser; UserModel? get selectedUser; bool get isLoading;
 /// Create a copy of UserState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $UserStateCopyWith<UserState> get copyWith => _$UserStateCopyWithImpl<UserState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserState&&(identical(other.currentUser, currentUser) || other.currentUser == currentUser)&&(identical(other.selectedUser, selectedUser) || other.selectedUser == selectedUser));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserState&&(identical(other.currentUser, currentUser) || other.currentUser == currentUser)&&(identical(other.selectedUser, selectedUser) || other.selectedUser == selectedUser)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentUser,selectedUser);
+int get hashCode => Object.hash(runtimeType,currentUser,selectedUser,isLoading);
 
 @override
 String toString() {
-  return 'UserState(currentUser: $currentUser, selectedUser: $selectedUser)';
+  return 'UserState(currentUser: $currentUser, selectedUser: $selectedUser, isLoading: $isLoading)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $UserStateCopyWith<$Res>  {
   factory $UserStateCopyWith(UserState value, $Res Function(UserState) _then) = _$UserStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<UserModel?> currentUser, UserModel? selectedUser
+ AsyncValue<UserModel?> currentUser, UserModel? selectedUser, bool isLoading
 });
 
 
@@ -62,11 +62,12 @@ class _$UserStateCopyWithImpl<$Res>
 
 /// Create a copy of UserState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? currentUser = null,Object? selectedUser = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? currentUser = null,Object? selectedUser = freezed,Object? isLoading = null,}) {
   return _then(_self.copyWith(
 currentUser: null == currentUser ? _self.currentUser : currentUser // ignore: cast_nullable_to_non_nullable
 as AsyncValue<UserModel?>,selectedUser: freezed == selectedUser ? _self.selectedUser : selectedUser // ignore: cast_nullable_to_non_nullable
-as UserModel?,
+as UserModel?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 /// Create a copy of UserState
@@ -160,10 +161,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<UserModel?> currentUser,  UserModel? selectedUser)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<UserModel?> currentUser,  UserModel? selectedUser,  bool isLoading)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserState() when $default != null:
-return $default(_that.currentUser,_that.selectedUser);case _:
+return $default(_that.currentUser,_that.selectedUser,_that.isLoading);case _:
   return orElse();
 
 }
@@ -181,10 +182,10 @@ return $default(_that.currentUser,_that.selectedUser);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<UserModel?> currentUser,  UserModel? selectedUser)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<UserModel?> currentUser,  UserModel? selectedUser,  bool isLoading)  $default,) {final _that = this;
 switch (_that) {
 case _UserState():
-return $default(_that.currentUser,_that.selectedUser);}
+return $default(_that.currentUser,_that.selectedUser,_that.isLoading);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -198,10 +199,10 @@ return $default(_that.currentUser,_that.selectedUser);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<UserModel?> currentUser,  UserModel? selectedUser)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<UserModel?> currentUser,  UserModel? selectedUser,  bool isLoading)?  $default,) {final _that = this;
 switch (_that) {
 case _UserState() when $default != null:
-return $default(_that.currentUser,_that.selectedUser);case _:
+return $default(_that.currentUser,_that.selectedUser,_that.isLoading);case _:
   return null;
 
 }
@@ -213,11 +214,12 @@ return $default(_that.currentUser,_that.selectedUser);case _:
 
 
 class _UserState implements UserState {
-  const _UserState({required this.currentUser, required this.selectedUser});
+  const _UserState({required this.currentUser, required this.selectedUser, required this.isLoading});
   
 
 @override final  AsyncValue<UserModel?> currentUser;
 @override final  UserModel? selectedUser;
+@override final  bool isLoading;
 
 /// Create a copy of UserState
 /// with the given fields replaced by the non-null parameter values.
@@ -229,16 +231,16 @@ _$UserStateCopyWith<_UserState> get copyWith => __$UserStateCopyWithImpl<_UserSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserState&&(identical(other.currentUser, currentUser) || other.currentUser == currentUser)&&(identical(other.selectedUser, selectedUser) || other.selectedUser == selectedUser));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserState&&(identical(other.currentUser, currentUser) || other.currentUser == currentUser)&&(identical(other.selectedUser, selectedUser) || other.selectedUser == selectedUser)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,currentUser,selectedUser);
+int get hashCode => Object.hash(runtimeType,currentUser,selectedUser,isLoading);
 
 @override
 String toString() {
-  return 'UserState(currentUser: $currentUser, selectedUser: $selectedUser)';
+  return 'UserState(currentUser: $currentUser, selectedUser: $selectedUser, isLoading: $isLoading)';
 }
 
 
@@ -249,7 +251,7 @@ abstract mixin class _$UserStateCopyWith<$Res> implements $UserStateCopyWith<$Re
   factory _$UserStateCopyWith(_UserState value, $Res Function(_UserState) _then) = __$UserStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<UserModel?> currentUser, UserModel? selectedUser
+ AsyncValue<UserModel?> currentUser, UserModel? selectedUser, bool isLoading
 });
 
 
@@ -266,11 +268,12 @@ class __$UserStateCopyWithImpl<$Res>
 
 /// Create a copy of UserState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? currentUser = null,Object? selectedUser = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? currentUser = null,Object? selectedUser = freezed,Object? isLoading = null,}) {
   return _then(_UserState(
 currentUser: null == currentUser ? _self.currentUser : currentUser // ignore: cast_nullable_to_non_nullable
 as AsyncValue<UserModel?>,selectedUser: freezed == selectedUser ? _self.selectedUser : selectedUser // ignore: cast_nullable_to_non_nullable
-as UserModel?,
+as UserModel?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

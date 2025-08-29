@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:prototype_a/app/providers/index_provider.dart';
 import 'package:prototype_a/core/utils/app_tab.dart';
 import 'package:prototype_a/features/admin/providers/admin_controller.dart';
@@ -23,15 +24,15 @@ class AuthController extends _$AuthController {
       final credentials = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
+      // Set the right page before updating the state, fixed some highlighting issues
+      ref
+          .read(currentIndexProvider.notifier)
+          .syncWithLocation(AppTab.tracker.path);
+
       state = AsyncData(credentials.user);
 
       // Refresh userController
       ref.read(userControllerProvider.notifier).build();
-
-      // Set the right page
-      ref
-          .read(currentIndexProvider.notifier)
-          .syncWithLocation(AppTab.tracker.path);
     } on FirebaseAuthException catch (e) {
       state = AsyncError(_firebaseErrorMessage(e), StackTrace.current);
     } catch (_) {
@@ -39,12 +40,21 @@ class AuthController extends _$AuthController {
     }
   }
 
-  Future<void> register(String email, String password) async {
+  Future<void> registerUserByEmail(String email) async {
     state = const AsyncLoading();
 
+    // Prevent login after creating a new user
+    FirebaseApp app = await Firebase.initializeApp(
+      name: 'Register',
+      options: Firebase.app().options,
+    );
+    final authCreate = FirebaseAuth.instanceFor(app: app);
+
     try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
+      final credential = await authCreate.createUserWithEmailAndPassword(
+        email: email,
+        password: 'Welkom123!',
+      );
 
       // check if usermodel should be full of nullable fields (email)
       final newUser = UserModel(
@@ -63,6 +73,7 @@ class AuthController extends _$AuthController {
     } on FirebaseAuthException catch (e, st) {
       state = AsyncError(e, st);
     }
+    await app.delete();
   }
 
   Future<void> signOutAndClear() async {
@@ -78,15 +89,15 @@ class AuthController extends _$AuthController {
   Future<void> clearError() async {
     state = const AsyncData(null);
   }
+}
 
-  String _firebaseErrorMessage(FirebaseAuthException e) {
-    switch (e.code) {
-      case 'user-not-found':
-        return 'No account found for that email.';
-      case 'wrong-password':
-        return 'Incorrect password.';
-      default:
-        return 'Login failed. Please try again.';
-    }
+String _firebaseErrorMessage(FirebaseAuthException e) {
+  switch (e.code) {
+    case 'user-not-found':
+      return 'No account found for that email.';
+    case 'wrong-password':
+      return 'Incorrect password.';
+    default:
+      return 'Login failed. Please try again.';
   }
 }

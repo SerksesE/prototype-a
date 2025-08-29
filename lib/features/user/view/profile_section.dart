@@ -53,6 +53,7 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
   }
 
   Future<void> _updateUser() async {
+    print('Start');
     final user =
         ref.read(userControllerProvider).selectedUser ??
         ref.read(userControllerProvider).currentUser.value;
@@ -70,13 +71,20 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
     setState(() {
       hasChanges = false;
     });
+
+    print('Done');
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text("Profile updated")));
   }
 
   @override
   Widget build(BuildContext context) {
-    final userAsync = ref.watch(userControllerProvider).currentUser;
+    final userAsync = ref.watch(userControllerProvider);
 
-    return userAsync.when(
+    return userAsync.currentUser.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (err, st) => Center(child: Text("Error: $err")),
       data: (user) {
@@ -117,17 +125,27 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
                 ),
                 const SizedBox(height: 12),
                 ElevatedButton(
-                  onPressed: hasChanges
-                      ? () async {
-                          await _updateUser();
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Profile updated")),
-                          );
-                        }
-                      : null,
-                  child: const Text("Save"),
+                  onPressed: hasChanges ? _updateUser : null,
+                  child: userAsync.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text("Save"),
                 ),
+                // ElevatedButton(
+                //   onPressed: hasChanges
+                //       ? () async {
+                //           await _updateUser();
+                //           if (!mounted) return;
+                //           ScaffoldMessenger.of(context).showSnackBar(
+                //             const SnackBar(content: Text("Profile updated")),
+                //           );
+                //         }
+                //       : null,
+                //   child: const Text("Save"),
+                // ),
               ],
             ),
           ),
