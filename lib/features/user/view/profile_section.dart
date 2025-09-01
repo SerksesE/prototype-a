@@ -53,7 +53,6 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
   }
 
   Future<void> _updateUser() async {
-    print('Start');
     final user =
         ref.read(userControllerProvider).selectedUser ??
         ref.read(userControllerProvider).currentUser.value;
@@ -71,8 +70,6 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
     setState(() {
       hasChanges = false;
     });
-
-    print('Done');
 
     if (!mounted) return;
     ScaffoldMessenger.of(
@@ -107,9 +104,21 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Profile", style: Theme.of(context).textTheme.titleLarge),
-                if (user.isAdmin == true)
-                  const Text("Admin Mode", style: TextStyle(color: Colors.red)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Profile",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    if (user.isAdmin == true)
+                      const Icon(
+                        Icons.verified_user,
+                        color: Colors.black,
+                        size: 24,
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: firstNameController,
@@ -124,28 +133,34 @@ class _ProfileSectionState extends ConsumerState<ProfileSection> {
                   decoration: const InputDecoration(labelText: "Email"),
                 ),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: hasChanges ? _updateUser : null,
-                  child: userAsync.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text("Save"),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: hasChanges
+                          ? WidgetStateProperty.all<Color>(Colors.green)
+                          : null,
+                    ),
+                    onPressed: hasChanges ? _updateUser : null,
+                    child: userAsync.isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : Text(
+                            "Save",
+                            style: TextStyle(
+                              color: hasChanges ? Colors.white : Colors.grey,
+                            ),
+                          ),
+                  ),
                 ),
-                // ElevatedButton(
-                //   onPressed: hasChanges
-                //       ? () async {
-                //           await _updateUser();
-                //           if (!mounted) return;
-                //           ScaffoldMessenger.of(context).showSnackBar(
-                //             const SnackBar(content: Text("Profile updated")),
-                //           );
-                //         }
-                //       : null,
-                //   child: const Text("Save"),
-                // ),
               ],
             ),
           ),

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prototype_a/features/admin/view/admin_section.dart';
-import 'package:prototype_a/features/auth/providers/auth_controller.dart';
 import 'package:prototype_a/features/user/providers/user_controller.dart';
 import 'package:prototype_a/features/user/view/profile_section.dart';
 
@@ -28,13 +27,6 @@ class UserPage extends ConsumerWidget {
                 const SizedBox(height: 24),
                 if (user?.isAdmin ?? false)
                   SizedBox(width: double.infinity, child: const AdminSection()),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    ref.read(authControllerProvider.notifier).signOutAndClear();
-                  },
-                  child: const Text('Logout'),
-                ),
               ],
             ),
           ),

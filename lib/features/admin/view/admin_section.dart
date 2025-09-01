@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prototype_a/features/admin/providers/admin_controller.dart';
+import 'package:prototype_a/features/admin/providers/admin_state.dart';
 import 'package:prototype_a/features/auth/providers/auth_controller.dart';
 import 'package:prototype_a/features/user/data/user_model.dart';
 import 'package:prototype_a/features/user/providers/user_controller.dart';
@@ -30,11 +31,17 @@ class AdminSection extends ConsumerWidget {
           .read(authControllerProvider.notifier)
           .registerUserByEmail(email);
 
-      // refresh users
-      await ref.read(adminControllerProvider.notifier).refreshUsers();
+      if (!context.mounted) return;
 
       Navigator.of(context).pop();
+
+      // refresh users
+      await ref
+          .read(adminControllerProvider.notifier)
+          .refreshUsersIncremental();
     } catch (e) {
+      if (!context.mounted) return;
+
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("Error: $e")));
@@ -62,12 +69,12 @@ class AdminSection extends ConsumerWidget {
                   ),
                 ],
               ),
+              actionsAlignment: MainAxisAlignment.spaceBetween,
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text("Cancel"),
                 ),
-                const Spacer(),
                 ElevatedButton(
                   onPressed: () =>
                       _registerUser(ref, emailController.text.trim(), context),
@@ -87,14 +94,69 @@ class AdminSection extends ConsumerWidget {
     );
   }
 
+  Future<void> _deleteUser(
+    WidgetRef ref,
+    UserModel user,
+    BuildContext context,
+  ) async {
+    try {
+      await ref.read(adminControllerProvider.notifier).deleteUser(user.id!);
+
+      if (!context.mounted) return;
+
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  void _openDeleteModal(BuildContext context, WidgetRef ref, UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final adminState = ref.watch(adminControllerProvider);
+
+            return AlertDialog(
+              title: const Text("Delete User"),
+              content: Text("Are you sure you want to delete ${user.email}?"),
+              actionsAlignment: MainAxisAlignment.spaceBetween,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () => _deleteUser(ref, user, context),
+                  child: adminState.isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text("Delete"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allUsersAsync = ref.watch(adminControllerProvider);
+    final adminState = ref.watch(adminControllerProvider);
 
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(children: [_buildUserList(context, ref, allUsersAsync)]),
+        child: Column(children: [_buildUserList(context, ref, adminState)]),
       ),
     );
   }
@@ -102,9 +164,9 @@ class AdminSection extends ConsumerWidget {
   Widget _buildUserList(
     BuildContext context,
     WidgetRef ref,
-    AsyncValue<List<UserModel>> allUsersAsync,
+    AdminState adminState,
   ) {
-    return allUsersAsync.when(
+    return adminState.users.when(
       data: (users) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -134,20 +196,21 @@ class AdminSection extends ConsumerWidget {
 
                   final isSelected = selectedUser == user;
 
+                  final isLoading = ref.watch(
+                    adminControllerProvider.select(
+                      (s) => s.loadingUserIds.contains(user!.id),
+                    ),
+                  );
+
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
                     title: Text(
-                      '${user.firstName ?? ''} ${user.lastName ?? ''}',
+                      '${user!.firstName ?? ''} ${user.lastName ?? ''}',
                     ),
                     subtitle: Text(user.email ?? ''),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (user.isAdmin == true)
-                          const Text(
-                            "Admin",
-                            style: TextStyle(color: Colors.red),
-                          ),
                         IconButton(
                           icon: Icon(
                             isSelected
@@ -157,6 +220,47 @@ class AdminSection extends ConsumerWidget {
                           ),
                           onPressed: () =>
                               _toggleUserVisibility(user, ref, selectedUser),
+                        ),
+                        IconButton(
+                          icon: isLoading
+                              ? SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.grey,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  user.isAdmin!
+                                      ? Icons.verified_user
+                                      : Icons.add_moderator_outlined,
+                                  color: user.isAdmin!
+                                      ? Colors.green[300]
+                                      : Colors.black45,
+                                ),
+                          onPressed: isLoading
+                              ? null
+                              : () => user.isAdmin!
+                                    ? ref
+                                          .read(
+                                            adminControllerProvider.notifier,
+                                          )
+                                          .removeAdminUser(user.id!)
+                                    : ref
+                                          .read(
+                                            adminControllerProvider.notifier,
+                                          )
+                                          .addAdminUser(user.id!, user.email!),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_forever_rounded,
+                            color: Colors.red[300],
+                          ),
+                          onPressed: () => _openDeleteModal(context, ref, user),
                         ),
                       ],
                     ),

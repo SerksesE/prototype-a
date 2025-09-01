@@ -10,7 +10,7 @@ part of 'admin_controller.dart';
 const adminControllerProvider = AdminControllerProvider._();
 
 final class AdminControllerProvider
-    extends $AsyncNotifierProvider<AdminController, List<UserModel>> {
+    extends $NotifierProvider<AdminController, AdminState> {
   const AdminControllerProvider._()
     : super(
         from: null,
@@ -28,22 +28,30 @@ final class AdminControllerProvider
   @$internal
   @override
   AdminController create() => AdminController();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AdminState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AdminState>(value),
+    );
+  }
 }
 
-String _$adminControllerHash() => r'c44814d81807a1f874d5fc11e4108594b44746ba';
+String _$adminControllerHash() => r'0aa4044a5b083877579a5d9479e4fe0cf54f5172';
 
-abstract class _$AdminController extends $AsyncNotifier<List<UserModel>> {
-  FutureOr<List<UserModel>> build();
+abstract class _$AdminController extends $Notifier<AdminState> {
+  AdminState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<AsyncValue<List<UserModel>>, List<UserModel>>;
+    final ref = this.ref as $Ref<AdminState, AdminState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<UserModel>>, List<UserModel>>,
-              AsyncValue<List<UserModel>>,
+              AnyNotifier<AdminState, AdminState>,
+              AdminState,
               Object?,
               Object?
             >;

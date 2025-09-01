@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prototype_a/core/utils/admin_actions.dart';
+import 'package:prototype_a/features/admin/providers/admin_state.dart';
 import 'package:prototype_a/features/user/data/user_model.dart';
 import 'package:prototype_a/features/user/providers/user_controller.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,7 +12,12 @@ class AdminController extends _$AdminController {
   List<UserModel>? _cachedUsers;
 
   @override
-  Future<List<UserModel>> build() async {
+  AdminState build() {
+    Future.microtask(() => _fetchUsers());
+    return AdminState.initial();
+  }
+
+  Future<List<UserModel>> _fetchUsers() async {
     try {
       // Riverpod already sets loading before this runs
       if (_cachedUsers != null) return _cachedUsers!;
@@ -29,16 +36,20 @@ class AdminController extends _$AdminController {
 
       final adminIds = adminsSnap.docs.map((doc) => doc.id).toSet();
 
-      _cachedUsers = usersSnap.docs.map((doc) {
-        return UserModel.fromJson(
-          doc.data(),
-        ).copyWith(isAdmin: adminIds.contains(doc.id));
-      }).toList();
+      _cachedUsers = usersSnap.docs
+          .map((doc) {
+            return UserModel.fromJson(
+              doc.data(),
+            ).copyWith(isAdmin: adminIds.contains(doc.id));
+          })
+          .where((user) => user.id != currentUser.id)
+          .toList();
 
+      state = state.copyWith(users: AsyncValue.data(_cachedUsers!));
       return _cachedUsers!;
     } catch (e, st) {
       // This ensures your view can react to error state
-      state = AsyncValue.error(e, st);
+      state = state.copyWith(users: AsyncValue.error(e, st));
       rethrow;
     }
   }
@@ -49,19 +60,113 @@ class AdminController extends _$AdminController {
   }
 
   /// Call this when you want to refresh explicitly
-  Future<void> refreshUsers() async {
-    _cachedUsers = null;
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => build());
+  Future<void> refreshUsersIncremental() async {
+    try {
+      final currentUser = await _getCurrentUser();
+      if (currentUser == null || !(currentUser.isAdmin ?? false)) return;
+
+      final usersSnap = await FirebaseFirestore.instance
+          .collection("users")
+          .get();
+      final adminsSnap = await FirebaseFirestore.instance
+          .collection("admins")
+          .get();
+
+      final adminIds = adminsSnap.docs.map((doc) => doc.id).toSet();
+
+      final fetchedUsers = usersSnap.docs
+          .map(
+            (doc) => UserModel.fromJson(
+              doc.data(),
+            ).copyWith(isAdmin: adminIds.contains(doc.id)),
+          )
+          .where((user) => user.id != currentUser.id)
+          .toList();
+
+      // Merge new users into cachedUsers
+      final currentIds = _cachedUsers?.map((u) => u.id).toSet() ?? {};
+      final newUsers = fetchedUsers
+          .where((u) => !currentIds.contains(u.id))
+          .toList();
+
+      if (_cachedUsers == null) {
+        _cachedUsers = fetchedUsers;
+      } else {
+        _cachedUsers = [..._cachedUsers!, ...newUsers];
+      }
+
+      state = state.copyWith(users: AsyncValue.data(_cachedUsers!));
+    } catch (e, st) {
+      state = state.copyWith(users: AsyncValue.error(e, st));
+      rethrow;
+    }
   }
 
-  Future<void> updateUserRole(String userId, String role) async {
-    await FirebaseFirestore.instance.collection('admins').doc(userId).set({});
-    await refreshUsers(); // refresh only on explicit update
+  Future<void> addAdminUser(String userId, String email) async {
+    final adminActions = AdminActions();
+    state = state.copyWith(loadingUserIds: {...state.loadingUserIds, userId});
+
+    try {
+      await adminActions.addAdminUser(uid: userId, email: email);
+      final updatedUsers = state.users.whenData((users) {
+        return users
+            .map(
+              (user) =>
+                  user!.id == userId ? user.copyWith(isAdmin: true) : user,
+            )
+            .toList();
+      });
+
+      state = state.copyWith(users: updatedUsers);
+    } catch (e, st) {
+      state = state.copyWith(users: AsyncValue.error(e, st));
+    }
+
+    // remove from loading
+    final newLoading = {...state.loadingUserIds}..remove(userId);
+    state = state.copyWith(loadingUserIds: newLoading);
+  }
+
+  Future<void> removeAdminUser(String userId) async {
+    final adminActions = AdminActions();
+    state = state.copyWith(loadingUserIds: {...state.loadingUserIds, userId});
+
+    try {
+      await adminActions.removeAdminUser(uid: userId);
+      final updatedUsers = state.users.whenData((users) {
+        return users
+            .map(
+              (user) =>
+                  user!.id == userId ? user.copyWith(isAdmin: false) : user,
+            )
+            .toList();
+      });
+
+      state = state.copyWith(users: updatedUsers);
+    } catch (e, st) {
+      state = state.copyWith(users: AsyncValue.error(e, st));
+    }
+
+    // remove from loading
+    final newLoading = {...state.loadingUserIds}..remove(userId);
+    state = state.copyWith(loadingUserIds: newLoading);
   }
 
   Future<void> deleteUser(String userId) async {
-    await FirebaseFirestore.instance.collection('users').doc(userId).delete();
-    await refreshUsers(); // refresh only on explicit delete
+    final AdminActions adminActions = AdminActions();
+    state = state.copyWith(isLoading: true);
+
+    try {
+      await adminActions.deleteUser(uid: userId);
+
+      if (_cachedUsers != null) {
+        _cachedUsers!.removeWhere((u) => u.id == userId);
+        state = state.copyWith(users: AsyncValue.data(_cachedUsers!));
+      }
+    } catch (e, st) {
+      state = state.copyWith(users: AsyncValue.error(e, st));
+    }
+
+    state = state.copyWith(isLoading: false);
   }
 }

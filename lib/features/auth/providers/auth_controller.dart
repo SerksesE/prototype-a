@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:prototype_a/app/providers/index_provider.dart';
+// import 'package:prototype_a/core/utils/admin_actions.dart';
 import 'package:prototype_a/core/utils/app_tab.dart';
 import 'package:prototype_a/features/admin/providers/admin_controller.dart';
 import 'package:prototype_a/features/user/data/user_model.dart';
@@ -18,6 +19,8 @@ class AuthController extends _$AuthController {
   }
 
   Future<void> signIn({required String email, required String password}) async {
+    // final AdminActions adminActions = AdminActions();
+
     state = const AsyncLoading();
 
     try {
@@ -28,6 +31,14 @@ class AuthController extends _$AuthController {
       ref
           .read(currentIndexProvider.notifier)
           .syncWithLocation(AppTab.tracker.path);
+
+      // Bootstrap the first admin might be removed after first run
+      // Call is quiet slow - Cloudfunction sits in an usa1 database location
+
+      // await adminActions.bootstrapFirstAdmin(
+      //   uid: credentials.user!.uid,
+      //   email: email,
+      // );
 
       state = AsyncData(credentials.user);
 
