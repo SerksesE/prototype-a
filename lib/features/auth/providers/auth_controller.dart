@@ -100,6 +100,40 @@ class AuthController extends _$AuthController {
   Future<void> clearError() async {
     state = const AsyncData(null);
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      state = AsyncError('No user logged in', StackTrace.current);
+      return;
+    }
+
+    state = const AsyncLoading();
+
+    try {
+      final email = user.email!;
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: currentPassword,
+      );
+
+      // Reauthenticate
+      await user.reauthenticateWithCredential(credential);
+
+      // Now update password
+      await user.updatePassword(newPassword);
+
+      state = AsyncData(user);
+    } on FirebaseAuthException catch (e, st) {
+      state = AsyncError(e, st);
+    } catch (e, st) {
+      state = AsyncError('Unexpected error: $e', st);
+    }
+  }
 }
 
 String _firebaseErrorMessage(FirebaseAuthException e) {

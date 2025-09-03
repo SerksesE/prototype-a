@@ -13,7 +13,7 @@
 
 # 4 (typescript/javascript):
 
-- firebase deploy --only functions --region=europe-west4
+- firebase deploy --only functions
 
 `Serving at port 8666`
 
@@ -26,10 +26,8 @@
 
 - create a provder that calls the function(s)
 
-
 npx eslint --fix src/index.ts
-firebase deploy --only functions --region=europe-west4
 
-# In code:
+# In flutter:
 
 FirebaseFunctions.instanceFor(region: 'europe-west4');

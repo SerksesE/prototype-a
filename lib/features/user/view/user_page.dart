@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prototype_a/features/admin/view/admin_section.dart';
 import 'package:prototype_a/features/user/providers/user_controller.dart';
+import 'package:prototype_a/features/user/view/password_section.dart';
 import 'package:prototype_a/features/user/view/profile_section.dart';
 
 class UserPage extends ConsumerWidget {
@@ -13,21 +14,28 @@ class UserPage extends ConsumerWidget {
     final userAsync = ref.watch(userControllerProvider).currentUser;
 
     return userAsync.when(
-      data: (user) => Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minWidth: kIsWeb ? 600 : double.infinity,
-            maxWidth: kIsWeb ? 600 : double.infinity,
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const ProfileSection(),
-                const SizedBox(height: 24),
-                if (user?.isAdmin ?? false)
-                  SizedBox(width: double.infinity, child: const AdminSection()),
-              ],
+      data: (user) => SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minWidth: kIsWeb ? 600 : double.infinity,
+                maxWidth: kIsWeb ? 600 : double.infinity,
+              ),
+              child: Column(
+                children: [
+                  const ProfileSection(),
+                  const SizedBox(height: 16),
+                  const PasswordSection(),
+                  const SizedBox(height: 16),
+                  if (user?.isAdmin ?? false)
+                    SizedBox(
+                      width: double.infinity,
+                      child: const AdminSection(),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

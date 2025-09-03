@@ -67,6 +67,13 @@ class _ResponsiveNavBarState extends ConsumerState<ResponsiveNavBar> {
     super.initState();
   }
 
+  Future<void> _handleSignOut(NavigationData tab) async {
+    final authProvider = ref.watch(authControllerProvider.notifier);
+    await authProvider.signOutAndClear();
+
+    tab.isHovering = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb) {
@@ -85,7 +92,6 @@ class _ResponsiveNavBarState extends ConsumerState<ResponsiveNavBar> {
     } else {
       final selectedUser = ref.watch(userControllerProvider).selectedUser;
       final authUser = ref.watch(authControllerProvider);
-      final authProvider = ref.watch(authControllerProvider.notifier);
 
       final List<Expanded> navigationItems = navigationData.map((tab) {
         final isActive = widget.currentIndex == tab.index;
@@ -93,9 +99,8 @@ class _ResponsiveNavBarState extends ConsumerState<ResponsiveNavBar> {
           flex: 3,
           child: TextButton(
             onHover: (value) => setState(() => tab.isHovering = value),
-            onPressed: () => !tab.isSignOut
-                ? widget.onTap(tab.index)
-                : authProvider.signOutAndClear(),
+            onPressed: () =>
+                !tab.isSignOut ? widget.onTap(tab.index) : _handleSignOut(tab),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
